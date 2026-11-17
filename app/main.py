@@ -24,6 +24,7 @@ from fastapi import FastAPI, HTTPException
 from loguru import logger
 
 import pandas as pd
+import time
 
 from app.schemas import HealthResponse, MachineInput, PredictionResponse
 
@@ -31,6 +32,17 @@ MODEL_PATH = Path(__file__).resolve().parents[1] / "model" / "model.joblib"
 
 # Mémoire d'application — peuplée par le lifespan
 state: dict[str, Any] = {}
+
+dirLog = Path("logs")
+dirLog.mkdir(parents=True, exist_ok=True)
+logger.add(
+    "logs/api.log",
+    rotation="5 MB",        # nouveau fichier dès que 10 Mo atteints
+    retention="7 days",     # garde 30 jours d'historique
+    compression="zip",       # compresse les fichiers archivés
+    level="INFO",            # ne logge pas les DEBUG dans ce fichier
+    enqueue=True,
+)
 
 
 @asynccontextmanager
@@ -105,14 +117,16 @@ def predict(item: MachineInput) -> PredictionResponse:
     Returns:
         PredictionResponse avec la classe prédite et les probabilités.
     """
+    start = time.perf_counter() 
 
     model = state["model"]
     if model is None:
         raise HTTPException(503, "Modèle non chargé")
 
+    logger.info(item.model_dump())
     df = pd.DataFrame([item.model_dump()])
-
     classe_predite = str(model.predict(df)[0])
+
     proba = model.predict_proba(df)[0]
     classes = model.classes_
 
@@ -120,6 +134,8 @@ def predict(item: MachineInput) -> PredictionResponse:
     dic = {}
     for cri, prob in liste:
         dic[str(cri)] = float(prob)
+    duree = (time.perf_counter() - start) * 1000 
+    logger.info(f"Prédiction réalisée en : {duree:.1f} ms")
     print("=====")
     print(classe_predite)
     print(dic)
