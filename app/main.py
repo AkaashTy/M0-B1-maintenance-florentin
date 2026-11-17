@@ -23,6 +23,8 @@ import joblib
 from fastapi import FastAPI, HTTPException
 from loguru import logger
 
+import pandas as pd
+
 from app.schemas import HealthResponse, MachineInput, PredictionResponse
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "model" / "model.joblib"
@@ -103,10 +105,31 @@ def predict(item: MachineInput) -> PredictionResponse:
     Returns:
         PredictionResponse avec la classe prédite et les probabilités.
     """
-    raise HTTPException(
-        status_code=501,
-        detail=(
-            "Endpoint /predict à implémenter — voir TODO dans app/main.py "
-            "et le mini-cours 01_FastAPI_essentiel.md."
-        ),
-    )
+
+    model = state["model"]
+    if model is None:
+        raise HTTPException(503, "Modèle non chargé")
+
+    df = pd.DataFrame([item.model_dump()])
+
+    classe_predite = str(model.predict(df)[0])
+    proba = model.predict_proba(df)[0]
+    classes = model.classes_
+
+    liste = list(zip(classes, proba))
+    dic = {}
+    for cri, prob in liste:
+        dic[str(cri)] = float(prob)
+    print("=====")
+    print(classe_predite)
+    print(dic)
+    print("=====")
+
+    return PredictionResponse(criticite=classe_predite, probabilites=dic)
+    # raise HTTPException(
+    #     status_code=501,
+    #     detail=(
+    #         "Endpoint /predict à implémenter — voir TODO dans app/main.py "
+    #         "et le mini-cours 01_FastAPI_essentiel.md."
+    #     ),
+    # )
