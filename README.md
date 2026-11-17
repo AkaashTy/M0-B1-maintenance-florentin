@@ -149,3 +149,48 @@ python model/train_baseline.py      # réentraîne le modèle (~30 s)
 4. **Demande de l'aide**, à l'oral ou par écrit dans le fil Discord du brief :
    les deux se valent. N'attends pas 30 min sur le même problème. Par écrit,
    colle la commande lancée et le message d'erreur complet.
+
+
+7 - Résultats
+
+
+```bash
+enance-florentin$ pytest -v
+===================== test session starts =====================
+platform linux -- Python 3.11.18, pytest-8.3.4, pluggy-1.7.0 -- /home/ffortea/projets/formationIA/M0-B1-maintenance-florentin/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/ffortea/projets/formationIA/M0-B1-maintenance-florentin
+plugins: anyio-4.6.2.post1, Faker-40.52.0
+collected 9 items                                             
+
+tests/test_health.py::test_health_returns_200 PASSED    [ 11%]
+tests/test_health.py::test_health_response_schema PASSED [ 22%]
+tests/test_predict.py::test_predict_returns_200 PASSED  [ 33%]
+tests/test_predict.py::test_predict_typeMachine_invalid PASSED[ 44%]
+tests/test_predict.py::test_predict_type_machine_valid_param[pompe] PASSED [ 55%]
+tests/test_predict.py::test_predict_type_machine_valid_param[compresseur] PASSED [ 66%]
+tests/test_predict.py::test_predict_type_machine_valid_param[convoyeur] PASSED [ 77%]
+tests/test_predict.py::test_predict_type_machine_valid_param[presse] PASSED [ 88%]
+tests/test_predict.py::test_predict_type_machine_valid_param[four] PASSED [100%]
+
+====================== 9 passed in 4.52s ======================
+
+```
+
+Curl /health 
+Le port 8001 a été défini ici pour cohabiter avec l'environnement de début de TP
+```bash
+ffortea@LT-ATIMIC-105:~/projets/formationIA/M0-B1-maintenance-florentin$ curl http://localhost:8001/health
+{"status":"ok","model_loaded":true} 
+```
+
+
+Docker Images 
+```bash
+(.venv) ffortea@LT-ATIMIC-105:~/projets/formationIA/M0-B1-maintenance-florentin$ docker images
+                                           i Info →   U  In Use
+IMAGE          ID             DISK USAGE   CONTENT SIZE   EXTRA
+fastia-maintenance:dev
+               9df025ecffd2        791MB          180MB        
+(.venv) ffortea@LT-ATIMIC-105:~/projets/formationIA/M0-B1-maintenance-florentin$ 
+```
