@@ -90,3 +90,22 @@ def test_predict_somme_probabilites_egale_1() -> None:
         assert response.status_code == 200
         body = response.json()
         assert sum(body["probabilites"].values()) == pytest.approx(1, abs=1e-9) 
+
+
+def test_predict_champ_manquant_returns_422() -> None:
+    payload = {
+        "age_machine_jours": 1500,
+        "derniere_maintenance_jours": 45,
+        "nb_incidents_3_mois": 2,
+        "pression_moyenne": 7.8,
+        "type_machine": "compresseur",
+        "vibration_moyenne": 3.2
+        }
+
+    with TestClient(app) as client:
+        response = client.post("/predict", json=payload)
+        assert response.status_code == 422
+        body = response.json()
+        erreur = body["detail"][0]
+        print(erreur)
+        assert erreur["loc"] == ["body", "temperature_moyenne"]   
